@@ -7,11 +7,35 @@ const homeStyle = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         position: 'relative',
-        // width: 
-        height: 290
+        height: 290,
+        value: {
+            position: "absolute"
+        },
+        display: {
+            position: "absolute",
+            bottom: 10
+        }
     },
-    buzzerToneDisplay: {
-        position: "absolute"
+    header: {
+        flexDirection: "row",
+        icon: {
+            width: 50,
+            height: 50,
+            resizeMode: "contain"
+        },
+        title: {
+            marginLeft: 16,
+            fontFamily: "Comfortaa"
+        }
+    },
+    actions: {
+        marginTop: 32,
+        padding: 32,
+        height: "100%",
+        backgroundColor: "#ff9800",
+        marginHorizontal: -16,
+        borderTopLeftRadius: 50,
+        borderTopRightRadius: 50
     }
 });
 

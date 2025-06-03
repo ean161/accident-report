@@ -4,7 +4,8 @@ import {
 
 const commonStyle = StyleSheet.create({
     wrapper: {
-        paddingHorizontal: 16
+        paddingHorizontal: 16,
+        fontFamily: "Comfortaa"
     }
 });
 

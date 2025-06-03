@@ -12,6 +12,7 @@
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		D242FAD7742D39197CA02DB6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		D2DDBFC945344E40AB85EFEF /* Comfortaa.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 39A74996E30447708EA6792D /* Comfortaa.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +20,7 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = accident_report/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = accident_report/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = accident_report/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		39A74996E30447708EA6792D /* Comfortaa.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Comfortaa.ttf; path = ../src/assets/font/Comfortaa.ttf; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-accident_report.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-accident_report.debug.xcconfig"; path = "Target Support Files/Pods-accident_report/Pods-accident_report.debug.xcconfig"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-accident_report.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-accident_report.release.xcconfig"; path = "Target Support Files/Pods-accident_report/Pods-accident_report.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-accident_report.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-accident_report.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +77,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				DA4D9101F1884B70BB6E237F /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -96,6 +99,15 @@
 				5709B34CF0A7D63546082F79 /* Pods-accident_report.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		DA4D9101F1884B70BB6E237F /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				39A74996E30447708EA6792D /* Comfortaa.ttf */,
+			);
+			name = Resources;
+			path = "";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -161,6 +173,7 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				D242FAD7742D39197CA02DB6 /* PrivacyInfo.xcprivacy in Resources */,
+				D2DDBFC945344E40AB85EFEF /* Comfortaa.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
