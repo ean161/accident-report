@@ -1,32 +1,98 @@
+#include <string.h>
 #include <WiFi.h>
+#include <WebSocketsClient.h>
 
-// Thay thông tin Wi-Fi tại đây
-const char* ssid = "TenWiFi";
-const char* password = "MatKhauWiFi";
+const char* ssid = "Phuong Minh 1";
+const char* password = "Vu124689@";
+const int sw420Pin = 25;
+const int sw540Pin = 26;
+const int buzzerPin = 33;
+const int ledPin = 2;
+
+int sw420State = 0;
+int sw420OldState = 0;
+int sw540State = 0;
+int sw540OldState = 0;
+
+WebSocketsClient webSocket;
+
+void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
+  String message = String((char*)payload);
+  int separatorIndex = message.indexOf('|');
+
+  char param1[10];
+  int param2;
+
+  if (separatorIndex != -1) {
+    String firstPart = message.substring(0, separatorIndex);
+    String secondPart = message.substring(separatorIndex + 1);
+
+    firstPart.toCharArray(param1, sizeof(param1));
+
+    param2 = secondPart.toInt();
+  }
+
+
+  switch(type) {
+    case WStype_DISCONNECTED:
+      Serial.println("Disconnected from server");
+      break;
+    case WStype_CONNECTED:
+      Serial.println("Connected to server");
+      break;
+    case WStype_TEXT:
+      Serial.println("Command: " + message);
+
+      if (message == "ON_LED")
+        digitalWrite(ledPin, HIGH);
+      else if (message == "OFF_LED")
+        digitalWrite(ledPin, LOW);
+      else if (strcmp(param1, "SOUND") == 0)
+        tone(buzzerPin, param2);
+      else if (message == "OFF_SOUND")
+        noTone(buzzerPin);
+      break;
+    case WStype_BIN:
+      Serial.println("Server command cant handle");
+      break;
+    default:
+      break;
+  }
+}
 
 void setup() {
   Serial.begin(115200);
-  delay(1000);
+  pinMode(ledPin, OUTPUT);
+  pinMode(sw420Pin, INPUT_PULLDOWN);
+  pinMode(sw540Pin, INPUT_PULLDOWN);
+  pinMode(buzzerPin, OUTPUT);
 
-  Serial.println("Dang ket noi WiFi...");
   WiFi.begin(ssid, password);
-
-  int retryCount = 0;
+  Serial.print("Connecting to wiFi");
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
-    retryCount++;
-    if (retryCount > 20) { // sau 10 giây thì dừng lại
-      Serial.println("\nKhong ket noi duoc WiFi.");
-      return;
-    }
   }
-
-  Serial.println("\nDa ket noi WiFi!");
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
+  Serial.println("\nWiFi connected");
+  
+  webSocket.begin("160.187.246.117", 8070, "/");
+  webSocket.onEvent(webSocketEvent);
+  webSocket.setReconnectInterval(5000);
 }
 
 void loop() {
-  // Có thể thêm code sử dụng Wi-Fi ở đây (gửi HTTP, MQTT, v.v.)
+  webSocket.loop();
+
+  sw420State = digitalRead(sw420Pin);
+  sw540State = digitalRead(sw540Pin);
+
+  if (sw420State != sw420OldState) {
+    sw420OldState = sw420State;
+    webSocket.sendTXT(String("SW420|") + sw420State);
+  }
+
+  if (sw540State != sw540OldState) {
+    sw540OldState = sw540State;
+    webSocket.sendTXT(String("SW540|") + sw540State);
+  }
 }

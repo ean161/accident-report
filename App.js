@@ -2,17 +2,12 @@
 import {
     SafeAreaView
 } from "react-native";
-import {
-    View,
-    Text
-} from "react-native-ui-lib";
+import Home from "./src/screens/home";
 
 export default function App() {
     return (
         <SafeAreaView>
-            <View>
-                <Text>Its working</Text>
-            </View>
+            <Home/>
         </SafeAreaView>
     );
 }
