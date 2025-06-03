@@ -6,7 +6,7 @@ const homeStyle = StyleSheet.create({
     buzzerToneCircular: {
         justifyContent: "center",
         alignItems: "center",
-        position: 'relative',
+        position: "relative",
         height: 290,
         value: {
             position: "absolute"
@@ -32,7 +32,7 @@ const homeStyle = StyleSheet.create({
         marginTop: 32,
         padding: 32,
         height: "100%",
-        backgroundColor: "#ff9800",
+        backgroundColor: "white",
         marginHorizontal: -16,
         borderTopLeftRadius: 50,
         borderTopRightRadius: 50

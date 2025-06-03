@@ -2,7 +2,11 @@ import {
     View,
     Text,
     Image,
-    Typography
+    Typography,
+    Button,
+    ButtonSpace,
+    Colors,
+    Color
 } from "react-native-ui-lib";
 import {
     useState,
@@ -12,6 +16,7 @@ import commonStyle from "../../theme/commonStyle";
 import homeStyle from "../../theme/homeStyle";
 import CircularSlider from 'react-native-circular-slider';
 import Svg, { G, Path } from 'react-native-svg';
+import ControlButton from "../../components/controlButton";
 
 export default function Home() {
     const [buzzerTone, setBuzzerTone] = useState(0);
@@ -36,12 +41,13 @@ export default function Home() {
                     style={homeStyle.header.icon}
                     source={require("./../../assets/img/icon_trans.png")}
                 />
-                <Text
+                
+                {/* <Text
                     grey20
                     text50M
                     style={homeStyle.header.title}
                     marginV-10
-                >Báo va chạm</Text>
+                >Báo va chạm</Text> */}
             </View>
             <View style={homeStyle.buzzerToneCircular}>
                 <Text
@@ -66,7 +72,7 @@ export default function Home() {
                 >Tần số chuông cảnh báo</Text>
             </View>
             <View style={homeStyle.actions}>
-                <Text>CC</Text>
+                
             </View>
         </View>
     );
