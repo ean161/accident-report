@@ -2,25 +2,24 @@ import {
     View,
     Text,
     Image,
-    Typography,
-    Button,
-    ButtonSpace,
-    Colors,
-    Color
+    Typography
 } from "react-native-ui-lib";
 import {
     useState,
     useEffect
 } from "react";
+import CircularSlider from 'react-native-circular-slider';
+import Icon from 'react-native-vector-icons/AntDesign';
 import commonStyle from "../../theme/commonStyle";
 import homeStyle from "../../theme/homeStyle";
-import CircularSlider from 'react-native-circular-slider';
-import Svg, { G, Path } from 'react-native-svg';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import ControlButton from "../../components/controlButton";
+import { Pressable } from "react-native";
 
 export default function Home() {
+    const wsServer = "ws://160.187.246.117:8070";
+
     const [ws, setWs] = useState(null);
+    const [wsState, setWsState] = useState(false);
     const [wsMessages, setWsMessages] = useState([]);
     const [buzzerTone, setBuzzerTone] = useState(0);
     const [angleLength, setAngleLength] = useState(100);
@@ -32,21 +31,36 @@ export default function Home() {
         setAngleLength(angleLength);
     };
 
+    const handleStateBtn = () => {
+        if (wsState)
+            ws.send(`ON_LED`);
+    }
+
     useEffect(() => {
         const angleDeg = angleLength * (180 / Math.PI);
         setBuzzerTone(Math.round(2000/360 * angleDeg).toLocaleString());
     }, [angleLength]);
 
     useEffect(() => {
-        const socket = new WebSocket("ws://160.187.246.117:8070");
+        if (wsState)
+            ws.send(`SET_BUZZER_TONE|${buzzerTone}`);
+    }, [buzzerTone]);
+
+    useEffect(() => {
+        const socket = new WebSocket(wsServer);
 
         socket.onopen = () => {
+            setWsState(true);
             socket.send("MOBILE_DEVICE_CONNECTED");
         };
 
         socket.onmessage = (event) => {
             setWsMessages(prev => [...prev, event.data]);
         };
+
+        socket.onerror = () => {
+            setWsState(false);
+        }
 
         setWs(socket);
 
@@ -58,17 +72,27 @@ export default function Home() {
     return (
         <View style={commonStyle.wrapper}>
             <View style={homeStyle.header}>
-                <Image
+                {/* <Image
                     style={homeStyle.header.icon}
                     source={require("./../../assets/img/icon_trans.png")}
-                />
-                <Icon name="home" size={50} color="#900" />
-                {/* <Text
-                    grey20
-                    text50M
+                /> */}
+                <Text
+                    black
+                    text40M
                     style={homeStyle.header.title}
-                    marginV-10
-                >Báo va chạm</Text> */}
+                >Báo va chạm</Text>
+                <Pressable
+                    children={
+                        <Icon
+                            name="poweroff"
+                            size={25}
+                            color="#900"
+                        />
+                    }
+                    onPress={handleStateBtn}
+                />
+                {/* <Icon source={require("./../../assets/img/icon_trans.png")} size={50} color="red" /> */}
+                
             </View>
             <View style={homeStyle.buzzerToneCircular}>
                 <Text

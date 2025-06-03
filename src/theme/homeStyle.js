@@ -18,13 +18,14 @@ const homeStyle = StyleSheet.create({
     },
     header: {
         flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
         icon: {
             width: 50,
             height: 50,
             resizeMode: "contain"
         },
         title: {
-            marginLeft: 16,
             fontFamily: "Comfortaa"
         }
     },
