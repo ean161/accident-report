@@ -2,8 +2,8 @@
 #include <WiFi.h>
 #include <WebSocketsClient.h>
 
-const char* ssid = "Phuong Minh 1";
-const char* password = "Vu124689@";
+const char* ssid = "Nhà.";
+const char* password = "";
 const int sw420Pin = 25;
 const int sw540Pin = 26;
 const int buzzerPin = 33;
@@ -14,13 +14,15 @@ int sw420OldState = 0;
 int sw540State = 0;
 int sw540OldState = 0;
 
+int sync_buzzerTone = 0;
+
 WebSocketsClient webSocket;
 
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
   String message = String((char*)payload);
   int separatorIndex = message.indexOf('|');
 
-  char param1[10];
+  char param1[50];
   int param2;
 
   if (separatorIndex != -1) {
@@ -39,6 +41,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
       break;
     case WStype_CONNECTED:
       Serial.println("Connected to server");
+      webSocket.sendTXT("CIRCUIT_DEVICE_CONNECTED");
       break;
     case WStype_TEXT:
       Serial.println("Command: " + message);
@@ -47,10 +50,18 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
         digitalWrite(ledPin, HIGH);
       else if (message == "OFF_LED")
         digitalWrite(ledPin, LOW);
-      else if (strcmp(param1, "SOUND") == 0)
-        tone(buzzerPin, param2);
+      else if (message == "ON_SOUND")
+        tone(buzzerPin, sync_buzzerTone);
       else if (message == "OFF_SOUND")
         noTone(buzzerPin);
+      else if (strcmp(param1, "BUZZER_TONE") == 0)
+        sync_buzzerTone = param2;
+      else if (strcmp(param1, "SYNC_LED") == 0)
+        digitalWrite(ledPin, param2);
+      else if (strcmp(param1, "SYNC_BUZZER") == 0)
+        digitalWrite(buzzerPin, param2);
+      else if (strcmp(param1, "SYNC_BUZZER_TONE") == 0)
+        sync_buzzerTone = param2;
       break;
     case WStype_BIN:
       Serial.println("Server command cant handle");
