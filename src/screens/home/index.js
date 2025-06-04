@@ -2,7 +2,8 @@ import {
     View,
     Text,
     Image,
-    Typography
+    Typography,
+    StackAggregator
 } from "react-native-ui-lib";
 import {
     useState,
@@ -14,6 +15,7 @@ import commonStyle from "../../theme/commonStyle";
 import homeStyle from "../../theme/homeStyle";
 import ControlButton from "../../components/controlButton";
 import { Pressable } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 
 export default function Home() {
     const wsServer = "ws://160.187.246.117:8070";
@@ -23,9 +25,10 @@ export default function Home() {
     const [wsMessages, setWsMessages] = useState([]);
     const [angleLength, setAngleLength] = useState(100);
 
-    const [dvcLed, setDvcLed] = useState(0);
-    const [dvcBuzzer, setDvcBuzzer] = useState(0);
-    const [buzzerTone, setBuzzerTone] = useState(10);
+    const [state, setState] = useState(0);
+    const [ledState, setLedState] = useState(0);
+    const [buzzerState, setBuzzerState] = useState(0);
+    const [buzzerFre, setBuzzerFre] = useState(10);
 
     const onUpdate = ({ startAngle, angleLength }) => {
         if (startAngle || (angleLength < (1/10) * Math.PI) || (angleLength > (19/10) * Math.PI))
@@ -34,7 +37,9 @@ export default function Home() {
     };
 
     const handleStateBtn = () => {
-        sendWs("ON_LED");
+        let newState = state == 1 ? 0 : 1;
+        setState(newState);
+        sendWs(`STATE|${newState}`);
     }
 
     const sendWs = (data) => {
@@ -45,13 +50,13 @@ export default function Home() {
     useEffect(() => {
         const angleDeg = angleLength * (180 / Math.PI);
         let cirVal = Math.round(2000/360 * angleDeg);
-        setBuzzerTone(Math.round((cirVal - (cirVal % 100))).toString().toLocaleString());
+        setBuzzerFre(Math.round((cirVal - (cirVal % 100))).toString().toLocaleString());
     }, [angleLength]);
 
     useEffect(() => {
-        if (buzzerTone != null)
-            sendWs(`BUZZER_TONE|${buzzerTone.toString().replace(",", "")}`);
-    }, [buzzerTone]);
+        if (buzzerFre != null)
+            sendWs(`BUZZER_TONE|${buzzerFre.toString().replace(",", "")}`);
+    }, [buzzerFre]);
 
     useEffect(() => {
         const socket = new WebSocket(wsServer);
@@ -62,26 +67,28 @@ export default function Home() {
         };
 
         socket.onmessage = (event) => {
-            setWsMessages(prev => [...prev, event.data]);
-
+            setWsMessages(prev => [...prev, event.data + " ----- " + Math.random()].slice(-20));
             const args = event.data.split("|");
 
             switch (args[0]) {
+                case "SYNC_STATE":
+                    setState(parseInt(args[1]));
+                    break;
                 case "SYNC_LED":
-                    setDvcLed(parseInt(args[1]));
+                    setLedState(parseInt(args[1]));
                     break;
                 case "SYNC_BUZZER":
-                    setDvcBuzzer(parseInt(args[1]));
+                    setBuzzerState(parseInt(args[1]));
                     break;
                 case "SYNC_BUZZER_TONE":
                     let hzVal = parseInt(args[1]);
 
                     if (hzVal < 100 || hzVal > 1900)
                         hzVal = 1000;
-                    
+
                     let cirVal = Math.round((hzVal / 2000) * 360);
                     setAngleLength(cirVal * Math.PI / 180);
-                    setBuzzerTone(cirVal - (cirVal / 100));
+                    setBuzzerFre(cirVal - (cirVal / 100));
                     break;
             }
         };
@@ -98,9 +105,9 @@ export default function Home() {
     }, []);
 
     useEffect(() => {
-        console.log(`LED${dvcLed}-`);
+        console.log(`LED${ledState}-`);
 
-    }, [dvcLed]);
+    }, [ledState]);
 
     return (
         <View style={commonStyle.wrapper}>
@@ -119,7 +126,7 @@ export default function Home() {
                         <Icon
                             name="poweroff"
                             size={25}
-                            color="#900"
+                            color={(state ? "red" : "green")}
                         />
                     }
                     onPress={handleStateBtn}
@@ -127,11 +134,11 @@ export default function Home() {
                 {/* <Icon source={require("./../../assets/img/icon_trans.png")} size={50} color="red" /> */}
                 
             </View>
-            <View style={homeStyle.buzzerToneCircular}>
+            <View style={homeStyle.buzzerFreCircular}>
                 <Text
                     grey30
-                    style={homeStyle.buzzerToneCircular.value}
-                >{buzzerTone} Hz</Text>
+                    style={homeStyle.buzzerFreCircular.value}
+                >{buzzerFre} Hz</Text>
                 <CircularSlider
                     startAngle={0}
                     angleLength={angleLength}
@@ -146,7 +153,7 @@ export default function Home() {
                 />
                 <Text
                     grey30
-                    style={homeStyle.buzzerToneCircular.display}
+                    style={homeStyle.buzzerFreCircular.display}
                 >Tần số chuông cảnh báo</Text>
             </View>
             <View style={homeStyle.actions}>
@@ -155,19 +162,19 @@ export default function Home() {
                     columnGap: 16
                 }}>
                     <ControlButton
-                        label={(`${dvcLed == 0 ? `BẬT` : `TẮT`} LED`)}
+                        label={(`${!ledState ? `BẬT` : `TẮT`} LED`)}
                         color="black"
                         onPress={() => {
-                            setDvcLed(!dvcLed);
-                            sendWs(`${dvcLed == 0 ? `ON` : `OFF`}_LED`);
+                            setLedState(!ledState);
+                            sendWs(`${!ledState ? `ON` : `OFF`}_LED`);
                         }}
                     />
                     <ControlButton
-                        label={(`${dvcBuzzer == 0 ? `BẬT` : `TẮT`} CHUÔNG`)}
+                        label={(`${!buzzerState ? `BẬT` : `TẮT`} CHUÔNG`)}
                         color="black"
                         onPress={() => {
-                            setDvcBuzzer(!dvcBuzzer);
-                            sendWs(`${dvcBuzzer == 0 ? `ON` : `OFF`}_SOUND`);
+                            setBuzzerState(!buzzerState);
+                            sendWs(`${!buzzerState ? `ON` : `OFF`}_SOUND`);
                         }}
                     />
                 </View>

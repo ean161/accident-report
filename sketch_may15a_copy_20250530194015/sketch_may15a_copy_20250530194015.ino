@@ -1,22 +1,21 @@
 #include <string.h>
 #include <WiFi.h>
 #include <WebSocketsClient.h>
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_ADXL345_U.h>
 
 const char* ssid = "Nhà.";
 const char* password = "";
-const int sw420Pin = 25;
-const int sw540Pin = 26;
-const int buzzerPin = 33;
+const int buzzerPin = 27;
 const int ledPin = 2;
 
-int sw420State = 0;
-int sw420OldState = 0;
-int sw540State = 0;
-int sw540OldState = 0;
-
 int sync_buzzerTone = 0;
+float lastAccel = 0;
+float shakeThreshold = 5;
 
 WebSocketsClient webSocket;
+Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
   String message = String((char*)payload);
@@ -54,17 +53,14 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
         tone(buzzerPin, sync_buzzerTone);
       else if (message == "OFF_SOUND")
         noTone(buzzerPin);
-      else if (strcmp(param1, "BUZZER_TONE") == 0)
+      else if (strcmp(param1, "BUZZER_TONE") == 0 || strcmp(param1, "SYNC_BUZZER_TONE") == 0)
         sync_buzzerTone = param2;
+      else if (strcmp(param1, "THRESHOLD_LEVEL") == 0 || strcmp(param1, "SYNC_THRESHOLD_LEVEL") == 0)
+        shakeThreshold = param2;
       else if (strcmp(param1, "SYNC_LED") == 0)
         digitalWrite(ledPin, param2);
       else if (strcmp(param1, "SYNC_BUZZER") == 0)
         digitalWrite(buzzerPin, param2);
-      else if (strcmp(param1, "SYNC_BUZZER_TONE") == 0)
-        sync_buzzerTone = param2;
-      break;
-    case WStype_BIN:
-      Serial.println("Server command cant handle");
       break;
     default:
       break;
@@ -72,10 +68,8 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 }
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   pinMode(ledPin, OUTPUT);
-  pinMode(sw420Pin, INPUT_PULLDOWN);
-  pinMode(sw540Pin, INPUT_PULLDOWN);
   pinMode(buzzerPin, OUTPUT);
 
   WiFi.begin(ssid, password);
@@ -89,21 +83,31 @@ void setup() {
   webSocket.begin("160.187.246.117", 8070, "/");
   webSocket.onEvent(webSocketEvent);
   webSocket.setReconnectInterval(5000);
+
+  if (!accel.begin()) {
+    Serial.println("ADXL345 not found");
+    while (1);
+  }
+  accel.setRange(ADXL345_RANGE_2_G);
 }
 
 void loop() {
   webSocket.loop();
+  sensors_event_t event;
+  accel.getEvent(&event);
 
-  sw420State = digitalRead(sw420Pin);
-  sw540State = digitalRead(sw540Pin);
+  float ax = event.acceleration.x;
+  float ay = event.acceleration.y;
+  float az = event.acceleration.z;
 
-  if (sw420State != sw420OldState) {
-    sw420OldState = sw420State;
-    webSocket.sendTXT(String("SW420|") + sw420State);
+  float currentAccel = sqrt(ax * ax + ay * ay + az * az);
+  float delta = abs(currentAccel - lastAccel);
+
+  if (delta > shakeThreshold) {
+    Serial.println("THRESHOLD event");
+    webSocket.sendTXT("THRESHOLD");
+    webSocket.sendTXT(String("TRS LV") + shakeThreshold);
   }
 
-  if (sw540State != sw540OldState) {
-    sw540OldState = sw540State;
-    webSocket.sendTXT(String("SW540|") + sw540State);
-  }
+  lastAccel = currentAccel;
 }

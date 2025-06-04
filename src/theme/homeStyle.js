@@ -3,7 +3,7 @@ import {
 } from "react-native";
 
 const homeStyle = StyleSheet.create({
-    buzzerToneCircular: {
+    buzzerFreCircular: {
         justifyContent: "center",
         alignItems: "center",
         position: "relative",
