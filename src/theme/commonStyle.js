@@ -6,7 +6,7 @@ const commonStyle = StyleSheet.create({
     wrapper: {
         paddingHorizontal: 16,
         // fontFamily: "Comfortaa",
-        backgroundColor: "#F7F6FC"
+        backgroundColor: "#d71f17"
     }
 });
 

@@ -9,7 +9,7 @@ import {
     Color
 } from "react-native-ui-lib";
 
-export default function ControlButton({ backgroundColor = "#f7f6fc", fontWeight = 600, label, color, onPress }) {
+export default function ControlButton({ backgroundColor = "#d71f17", fontWeight = 600, label, color, onPress }) {
     return (
         <Button
             backgroundColor={backgroundColor}
@@ -20,6 +20,7 @@ export default function ControlButton({ backgroundColor = "#f7f6fc", fontWeight 
             }}
             enableShadow
             onPress={onPress}
+            marginB-16
         />
     );
 }

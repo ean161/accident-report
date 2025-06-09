@@ -7,10 +7,10 @@ import {
 } from "react-native-ui-lib";
 import {
     useState,
-    useEffect
+    useEffect,
+    Colors
 } from "react";
-import CircularSlider from 'react-native-circular-slider';
-import Icon from 'react-native-vector-icons/AntDesign';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import commonStyle from "../../theme/commonStyle";
 import homeStyle from "../../theme/homeStyle";
 import ControlButton from "../../components/controlButton";
@@ -23,40 +23,35 @@ export default function Home() {
     const [ws, setWs] = useState(null);
     const [wsState, setWsState] = useState(false);
     const [wsMessages, setWsMessages] = useState([]);
-    const [angleLength, setAngleLength] = useState(100);
 
     const [state, setState] = useState(0);
     const [ledState, setLedState] = useState(0);
     const [buzzerState, setBuzzerState] = useState(0);
-    const [buzzerFre, setBuzzerFre] = useState(10);
+    const [isCircuitConnected, setIsCircuitConnected] = useState(false);
+    const [isCircuitChecking, setIsCircuitChecking] = useState(false);
 
-    const onUpdate = ({ startAngle, angleLength }) => {
-        if (startAngle || (angleLength < (1/10) * Math.PI) || (angleLength > (19/10) * Math.PI))
-            return;
-        setAngleLength(angleLength);
-    };
-
+    const sendWs = (data) => {
+        if (wsState)
+            ws.send(data);
+    }
+    
     const handleStateBtn = () => {
         let newState = state == 1 ? 0 : 1;
         setState(newState);
         sendWs(`STATE|${newState}`);
     }
 
-    const sendWs = (data) => {
-        if (wsState)
-            ws.send(data);
+    const handleCheckConnect = () => {
+        setIsCircuitConnected(false);
+        setIsCircuitChecking(true);
+        sendWs("CHECK_CIRCUIT_CONNECTED");
     }
 
     useEffect(() => {
-        const angleDeg = angleLength * (180 / Math.PI);
-        let cirVal = Math.round(2000/360 * angleDeg);
-        setBuzzerFre(Math.round((cirVal - (cirVal % 100))).toString().toLocaleString());
-    }, [angleLength]);
-
-    useEffect(() => {
-        if (buzzerFre != null)
-            sendWs(`BUZZER_TONE|${buzzerFre.toString().replace(",", "")}`);
-    }, [buzzerFre]);
+        setTimeout(() => {
+            setIsCircuitChecking(false);
+        }, 3000);
+    }, [isCircuitChecking]);
 
     useEffect(() => {
         const socket = new WebSocket(wsServer);
@@ -67,7 +62,7 @@ export default function Home() {
         };
 
         socket.onmessage = (event) => {
-            setWsMessages(prev => [...prev, event.data + " ----- " + Math.random()].slice(-20));
+            setWsMessages(prev => [...prev, event.data].slice(-20));
             const args = event.data.split("|");
 
             switch (args[0]) {
@@ -80,15 +75,11 @@ export default function Home() {
                 case "SYNC_BUZZER":
                     setBuzzerState(parseInt(args[1]));
                     break;
-                case "SYNC_BUZZER_TONE":
-                    let hzVal = parseInt(args[1]);
-
-                    if (hzVal < 100 || hzVal > 1900)
-                        hzVal = 1000;
-
-                    let cirVal = Math.round((hzVal / 2000) * 360);
-                    setAngleLength(cirVal * Math.PI / 180);
-                    setBuzzerFre(cirVal - (cirVal / 100));
+                case "CHECK_CIRCUIT_CONNECTED_RESPONSE":
+                    setIsCircuitConnected(true);
+                    setIsCircuitChecking(false);
+                    break;
+                default:
                     break;
             }
         };
@@ -105,17 +96,12 @@ export default function Home() {
     }, []);
 
     useEffect(() => {
-        console.log(`LED${ledState}-`);
-
-    }, [ledState]);
+        handleCheckConnect();
+    }, [ws]);
 
     return (
         <View style={commonStyle.wrapper}>
             <View style={homeStyle.header}>
-                {/* <Image
-                    style={homeStyle.header.icon}
-                    source={require("./../../assets/img/icon_trans.png")}
-                /> */}
                 <Text
                     black
                     text40M
@@ -124,46 +110,53 @@ export default function Home() {
                 <Pressable
                     children={
                         <Icon
-                            name="poweroff"
-                            size={25}
-                            color={(state ? "red" : "green")}
+                            name="connect-without-contact"
+                            size={30}
+                            color={(state ? "#3bca64" : "white")}
                         />
                     }
                     onPress={handleStateBtn}
                 />
-                {/* <Icon source={require("./../../assets/img/icon_trans.png")} size={50} color="red" /> */}
-                
-            </View>
-            <View style={homeStyle.buzzerFreCircular}>
-                <Text
-                    grey30
-                    style={homeStyle.buzzerFreCircular.value}
-                >{buzzerFre} Hz</Text>
-                <CircularSlider
-                    startAngle={0}
-                    angleLength={angleLength}
-                    onUpdate={onUpdate}
-                    segments={5}
-                    strokeWidth={40}
-                    radius={80}
-                    gradientColorFrom="#ff9800"
-                    gradientColorTo="#ffcf00"
-                    clockFaceColor="#9d9d9d"
-                    bgCircleColor="#171717"
-                />
-                <Text
-                    grey30
-                    style={homeStyle.buzzerFreCircular.display}
-                >Tần số chuông cảnh báo</Text>
+                <View style={{
+                    position: "absolute",
+                    marginTop: 210,
+                    left: "50%",
+                    transform: [{ translateX: -150 / 2 }]
+                }}>
+                    <Icon
+                        name={(isCircuitConnected ? "cloud-queue" : "cloud-off")}
+                        size="150"
+                        color="white"
+                    />
+                    <Text center white>
+                        {(isCircuitChecking ?
+                            "Đang kết nối" :
+                            (isCircuitConnected ?
+                                "Đã kết nối" :
+                                "Chưa kết nối"
+                            )
+                        )}
+                    </Text>
+                </View>
             </View>
             <View style={homeStyle.actions}>
                 <View style={{
                     flexDirection: "row",
+                    flexWrap: "wrap",
                     columnGap: 16
                 }}>
                     <ControlButton
+                        label={(isCircuitChecking ? "ĐANG KIỂM TRA KẾT NỐI" : "KIỂM TRA KẾT NỐI")}
+                        color={(!isCircuitChecking ? "#d71f17" : "#fee3ea")}
+                        backgroundColor={(!isCircuitChecking ? "#fee3ea" : "#d71f17")}
+                        onPress={() => {
+                            handleCheckConnect();
+                        }}
+                    />
+                    <ControlButton
                         label={(`${!ledState ? `BẬT` : `TẮT`} LED`)}
-                        color="black"
+                        color={(!ledState ? "#d71f17" : "#fee3ea")}
+                        backgroundColor={(!ledState ? "#fee3ea" : "#d71f17")}
                         onPress={() => {
                             setLedState(!ledState);
                             sendWs(`${!ledState ? `ON` : `OFF`}_LED`);
@@ -171,23 +164,16 @@ export default function Home() {
                     />
                     <ControlButton
                         label={(`${!buzzerState ? `BẬT` : `TẮT`} CHUÔNG`)}
-                        color="black"
+                        color={(!buzzerState ? "#d71f17" : "#fee3ea")}
+                        backgroundColor={(!buzzerState ? "#fee3ea" : "#d71f17")}
                         onPress={() => {
                             setBuzzerState(!buzzerState);
                             sendWs(`${!buzzerState ? `ON` : `OFF`}_SOUND`);
                         }}
                     />
                 </View>
-                <Text>{wsMessages.join("\n")}</Text>
+                <Text marginT-32>{wsMessages.join("\n")}</Text>
             </View>
         </View>
     );
 }
-
-
-/*
-Quay x/360 => tone => server (tone)
-
-server => push tone ve => 
-
-    */

@@ -3,34 +3,18 @@ import {
 } from "react-native";
 
 const homeStyle = StyleSheet.create({
-    buzzerFreCircular: {
-        justifyContent: "center",
-        alignItems: "center",
-        position: "relative",
-        height: 290,
-        value: {
-            position: "absolute"
-        },
-        display: {
-            position: "absolute",
-            bottom: 10
-        }
-    },
     header: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        icon: {
-            width: 50,
-            height: 50,
-            resizeMode: "contain"
-        },
+        marginTop: 16,
         title: {
-            fontFamily: "Comfortaa"
+            fontFamily: "Comfortaa",
+            color: "white"
         }
     },
     actions: {
-        marginTop: 32,
+        marginTop: 200,
         padding: 32,
         height: "100%",
         backgroundColor: "white",

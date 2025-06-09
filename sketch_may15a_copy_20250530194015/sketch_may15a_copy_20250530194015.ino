@@ -5,14 +5,15 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_ADXL345_U.h>
 
-const char* ssid = "Nhà.";
-const char* password = "";
+const char* ssid = "Thien Phu";
+const char* password = "thienphu2014";
 const int buzzerPin = 27;
 const int ledPin = 2;
+const sync_buzzerTone = 1000;
 
-int sync_buzzerTone = 0;
 float lastAccel = 0;
 float shakeThreshold = 5;
+
 
 WebSocketsClient webSocket;
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
@@ -43,6 +44,9 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
       webSocket.sendTXT("CIRCUIT_DEVICE_CONNECTED");
       break;
     case WStype_TEXT:
+      digitalWrite(ledPin, HIGH);
+      delay(100);
+      digitalWrite(ledPin, LOW);
       Serial.println("Command: " + message);
 
       if (message == "ON_LED")
@@ -53,8 +57,8 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
         tone(buzzerPin, sync_buzzerTone);
       else if (message == "OFF_SOUND")
         noTone(buzzerPin);
-      else if (strcmp(param1, "BUZZER_TONE") == 0 || strcmp(param1, "SYNC_BUZZER_TONE") == 0)
-        sync_buzzerTone = param2;
+      else if (message == "CHECK_CIRCUIT_CONNECTED")
+        webSocket.sendTXT("CHECK_CIRCUIT_CONNECTED_RESPONSE");
       else if (strcmp(param1, "THRESHOLD_LEVEL") == 0 || strcmp(param1, "SYNC_THRESHOLD_LEVEL") == 0)
         shakeThreshold = param2;
       else if (strcmp(param1, "SYNC_LED") == 0)
@@ -89,6 +93,10 @@ void setup() {
     while (1);
   }
   accel.setRange(ADXL345_RANGE_2_G);
+
+  digitalWrite(ledPin, HIGH);
+  delay(3000);
+  digitalWrite(ledPin, LOW);
 }
 
 void loop() {
