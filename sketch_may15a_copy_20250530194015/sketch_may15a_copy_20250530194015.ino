@@ -42,6 +42,10 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
     case WStype_CONNECTED:
       Serial.println("Connected to server");
       webSocket.sendTXT("CIRCUIT_DEVICE_CONNECTED");
+
+      IPAddress ip = WiFi.localIP();
+      String ipMessage = "CIRCUIT_IP|" + ip.toString();
+      webSocket.sendTXT(ipMessage);
       break;
     case WStype_TEXT:
       digitalWrite(ledPin, HIGH);

@@ -1,12 +1,12 @@
 import { 
     StyleSheet
 } from "react-native";
+import Color from "./../utils/color";
 
 const commonStyle = StyleSheet.create({
     wrapper: {
         paddingHorizontal: 16,
-        // fontFamily: "Comfortaa",
-        backgroundColor: "#d71f17"
+        backgroundColor: Color.danger.default
     }
 });
 

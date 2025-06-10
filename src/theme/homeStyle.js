@@ -11,6 +11,12 @@ const homeStyle = StyleSheet.create({
         title: {
             fontFamily: "Comfortaa",
             color: "white"
+        },
+        connectState: {
+            position: "absolute",
+            marginTop: 210,
+            left: "50%",
+            transform: [{ translateX: -150 / 2 }]
         }
     },
     actions: {
@@ -20,7 +26,11 @@ const homeStyle = StyleSheet.create({
         backgroundColor: "white",
         marginHorizontal: -16,
         borderTopLeftRadius: 50,
-        borderTopRightRadius: 50
+        borderTopRightRadius: 50,
+        location: {
+            flexDirection: "row",
+            justifyContent: "flex-end"
+        }
     }
 });
 

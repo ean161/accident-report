@@ -16,6 +16,7 @@ import homeStyle from "../../theme/homeStyle";
 import ControlButton from "../../components/controlButton";
 import { Pressable } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
+import Color from "./../../utils/color";
 
 export default function Home() {
     const wsServer = "ws://160.187.246.117:8070";
@@ -27,12 +28,13 @@ export default function Home() {
     const [state, setState] = useState(0);
     const [ledState, setLedState] = useState(0);
     const [buzzerState, setBuzzerState] = useState(0);
+    const [location, setLocation] = useState("Cần Thơ");
     const [isCircuitConnected, setIsCircuitConnected] = useState(false);
     const [isCircuitChecking, setIsCircuitChecking] = useState(false);
 
     const sendWs = (data) => {
-        if (wsState)
-            ws.send(data);
+        if (wsState) 
+            ws.send(data)
     }
     
     const handleStateBtn = () => {
@@ -75,6 +77,9 @@ export default function Home() {
                 case "SYNC_BUZZER":
                     setBuzzerState(parseInt(args[1]));
                     break;
+                case "SYNC_LOCATION":
+                    setLocation(args[1]);
+                    break;
                 case "CHECK_CIRCUIT_CONNECTED_RESPONSE":
                     setIsCircuitConnected(true);
                     setIsCircuitChecking(false);
@@ -112,17 +117,12 @@ export default function Home() {
                         <Icon
                             name="connect-without-contact"
                             size={30}
-                            color={(state ? "#3bca64" : "white")}
+                            color={(state ? Color.success.fade : "white")}
                         />
                     }
                     onPress={handleStateBtn}
                 />
-                <View style={{
-                    position: "absolute",
-                    marginTop: 210,
-                    left: "50%",
-                    transform: [{ translateX: -150 / 2 }]
-                }}>
+                <View style={homeStyle.header.connectState}>
                     <Icon
                         name={(isCircuitConnected ? "cloud-queue" : "cloud-off")}
                         size="150"
@@ -133,13 +133,23 @@ export default function Home() {
                             "Đang kết nối" :
                             (isCircuitConnected ?
                                 "Đã kết nối" :
-                                "Chưa kết nối"
+                                "Mất kết nối"
                             )
                         )}
                     </Text>
                 </View>
             </View>
             <View style={homeStyle.actions}>
+                <View marginB-16 style={homeStyle.actions.location}>
+                    <Icon
+                        name="location-on"
+                        color={Color.danger.default}
+                        size={16}
+                    />
+                    <Text marginL-5 style={{
+                        color: Color.danger.default
+                    }}>{isCircuitConnected ? "location" : "Không tìm thấy"}</Text>
+                </View>
                 <View style={{
                     flexDirection: "row",
                     flexWrap: "wrap",
@@ -147,16 +157,16 @@ export default function Home() {
                 }}>
                     <ControlButton
                         label={(isCircuitChecking ? "ĐANG KIỂM TRA KẾT NỐI" : "KIỂM TRA KẾT NỐI")}
-                        color={(!isCircuitChecking ? "#d71f17" : "#fee3ea")}
-                        backgroundColor={(!isCircuitChecking ? "#fee3ea" : "#d71f17")}
+                        color={(!isCircuitChecking ? Color.danger.default : Color.danger.fade)}
+                        backgroundColor={(!isCircuitChecking ? Color.danger.fade : Color.danger.default)}
                         onPress={() => {
                             handleCheckConnect();
                         }}
                     />
                     <ControlButton
                         label={(`${!ledState ? `BẬT` : `TẮT`} LED`)}
-                        color={(!ledState ? "#d71f17" : "#fee3ea")}
-                        backgroundColor={(!ledState ? "#fee3ea" : "#d71f17")}
+                        color={(!ledState ? Color.danger.default : Color.danger.fade)}
+                        backgroundColor={(!ledState ? Color.danger.fade : Color.danger.default)}
                         onPress={() => {
                             setLedState(!ledState);
                             sendWs(`${!ledState ? `ON` : `OFF`}_LED`);
@@ -164,15 +174,15 @@ export default function Home() {
                     />
                     <ControlButton
                         label={(`${!buzzerState ? `BẬT` : `TẮT`} CHUÔNG`)}
-                        color={(!buzzerState ? "#d71f17" : "#fee3ea")}
-                        backgroundColor={(!buzzerState ? "#fee3ea" : "#d71f17")}
+                        color={(!buzzerState ? Color.danger.default : Color.danger.fade)}
+                        backgroundColor={(!buzzerState ? Color.danger.fade : Color.danger.default)}
                         onPress={() => {
                             setBuzzerState(!buzzerState);
                             sendWs(`${!buzzerState ? `ON` : `OFF`}_SOUND`);
                         }}
                     />
                 </View>
-                <Text marginT-32>{wsMessages.join("\n")}</Text>
+                <Text marginT-16>{wsMessages.join("\n")}</Text>
             </View>
         </View>
     );
