@@ -8,6 +8,7 @@ import {
 import {
     useState,
     useEffect,
+    useRef,
     Colors
 } from "react";
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -20,6 +21,8 @@ import Color from "./../../utils/color";
 
 export default function Home() {
     const wsServer = "ws://160.187.246.117:8070";
+    const checkConnectInterval = useRef(null);
+    const bingTimeout = useRef(Math.floor(Date.now() / 1000));
 
     const [ws, setWs] = useState(null);
     const [wsState, setWsState] = useState(false);
@@ -28,13 +31,12 @@ export default function Home() {
     const [state, setState] = useState(0);
     const [ledState, setLedState] = useState(0);
     const [buzzerState, setBuzzerState] = useState(0);
-    const [location, setLocation] = useState("Cần Thơ");
+    const [location, setLocation] = useState("");
     const [isCircuitConnected, setIsCircuitConnected] = useState(false);
-    const [isCircuitChecking, setIsCircuitChecking] = useState(false);
 
     const sendWs = (data) => {
-        if (wsState) 
-            ws.send(data)
+        if (wsState)
+            ws.send(data);
     }
     
     const handleStateBtn = () => {
@@ -43,28 +45,17 @@ export default function Home() {
         sendWs(`STATE|${newState}`);
     }
 
-    const handleCheckConnect = () => {
-        setIsCircuitConnected(false);
-        setIsCircuitChecking(true);
-        sendWs("CHECK_CIRCUIT_CONNECTED");
-    }
-
-    useEffect(() => {
-        setTimeout(() => {
-            setIsCircuitChecking(false);
-        }, 3000);
-    }, [isCircuitChecking]);
-
     useEffect(() => {
         const socket = new WebSocket(wsServer);
 
         socket.onopen = () => {
             setWsState(true);
             socket.send("MOBILE_DEVICE_CONNECTED");
+            socket.send("CHECK_CIRCUIT_CONNECTED");
         };
 
         socket.onmessage = (event) => {
-            setWsMessages(prev => [...prev, event.data].slice(-20));
+            setWsMessages(prev => [...prev, event.data + ";" + Math.floor(Math.random() * 10000)].slice(-20));
             const args = event.data.split("|");
 
             switch (args[0]) {
@@ -78,11 +69,25 @@ export default function Home() {
                     setBuzzerState(parseInt(args[1]));
                     break;
                 case "SYNC_LOCATION":
-                    setLocation(args[1]);
+                    if (args[1] != "ERROR")
+                        setLocation(args[1]);
                     break;
                 case "CHECK_CIRCUIT_CONNECTED_RESPONSE":
                     setIsCircuitConnected(true);
-                    setIsCircuitChecking(false);
+                    bingTimeout.current = Math.floor(Date.now() / 1000);
+                    break;
+                case "CIRCUIT_IP":
+                    if (checkConnectInterval.current) {
+                        clearInterval(checkConnectInterval.current);
+                    }
+
+                    checkConnectInterval.current = setInterval(() => {
+                        socket.send("CHECK_CIRCUIT_CONNECTED");
+                    }, 1000);
+                    break;
+                case "CLIENT_DISCONNECTED":
+                case "CIRCUIT_DEVICE_CONNECTED":
+                    //
                     break;
                 default:
                     break;
@@ -97,12 +102,22 @@ export default function Home() {
 
         return () => {
             socket.close();
+            if (checkConnectInterval.current) {
+                clearInterval(checkConnectInterval.current);
+            }
         };
     }, []);
 
     useEffect(() => {
-        handleCheckConnect();
-    }, [ws]);
+        const interval = setInterval(() => {
+            const now = Math.floor(Date.now() / 1000);
+            if (now - bingTimeout.current > 5) {
+                setIsCircuitConnected(false);
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [])
 
     return (
         <View style={commonStyle.wrapper}>
@@ -129,12 +144,9 @@ export default function Home() {
                         color="white"
                     />
                     <Text center white>
-                        {(isCircuitChecking ?
-                            "Đang kết nối" :
-                            (isCircuitConnected ?
-                                "Đã kết nối" :
-                                "Mất kết nối"
-                            )
+                        {(isCircuitConnected ?
+                            "Đã kết nối" :
+                            "Mất kết nối"
                         )}
                     </Text>
                 </View>
@@ -148,21 +160,13 @@ export default function Home() {
                     />
                     <Text marginL-5 style={{
                         color: Color.danger.default
-                    }}>{isCircuitConnected ? "location" : "Không tìm thấy"}</Text>
+                    }}>{isCircuitConnected ? location : "Không tìm thấy"}</Text>
                 </View>
                 <View style={{
                     flexDirection: "row",
                     flexWrap: "wrap",
                     columnGap: 16
                 }}>
-                    <ControlButton
-                        label={(isCircuitChecking ? "ĐANG KIỂM TRA KẾT NỐI" : "KIỂM TRA KẾT NỐI")}
-                        color={(!isCircuitChecking ? Color.danger.default : Color.danger.fade)}
-                        backgroundColor={(!isCircuitChecking ? Color.danger.fade : Color.danger.default)}
-                        onPress={() => {
-                            handleCheckConnect();
-                        }}
-                    />
                     <ControlButton
                         label={(`${!ledState ? `BẬT` : `TẮT`} LED`)}
                         color={(!ledState ? Color.danger.default : Color.danger.fade)}

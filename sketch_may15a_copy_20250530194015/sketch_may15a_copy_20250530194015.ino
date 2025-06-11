@@ -2,17 +2,18 @@
 #include <WiFi.h>
 #include <WebSocketsClient.h>
 #include <Wire.h>
+#include <HTTPClient.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_ADXL345_U.h>
 
-const char* ssid = "Thien Phu";
-const char* password = "thienphu2014";
+const char* ssid = "Nnq";
+const char* password = "25012005";
 const int buzzerPin = 27;
 const int ledPin = 2;
-const sync_buzzerTone = 1000;
+const int sync_buzzerTone = 1000;
 
 float lastAccel = 0;
-float shakeThreshold = 5;
+float shakeThreshold = 50;
 
 
 WebSocketsClient webSocket;
@@ -20,6 +21,7 @@ Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
   String message = String((char*)payload);
+
   int separatorIndex = message.indexOf('|');
 
   char param1[50];
@@ -43,14 +45,19 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
       Serial.println("Connected to server");
       webSocket.sendTXT("CIRCUIT_DEVICE_CONNECTED");
 
-      IPAddress ip = WiFi.localIP();
-      String ipMessage = "CIRCUIT_IP|" + ip.toString();
-      webSocket.sendTXT(ipMessage);
+      while (true) {
+        String ip = getPublicIP();
+        Serial.println(String("IP result: ") + ip);
+        if (ip == "ERROR") {
+          delay(1000);
+          continue;
+        }
+
+        webSocket.sendTXT(String("CIRCUIT_IP|") + ip);
+        break;
+      }
       break;
     case WStype_TEXT:
-      digitalWrite(ledPin, HIGH);
-      delay(100);
-      digitalWrite(ledPin, LOW);
       Serial.println("Command: " + message);
 
       if (message == "ON_LED")
@@ -59,18 +66,29 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
         digitalWrite(ledPin, LOW);
       else if (message == "ON_SOUND")
         tone(buzzerPin, sync_buzzerTone);
-      else if (message == "OFF_SOUND")
+      else if (message == "OFF_SOUND") {
         noTone(buzzerPin);
-      else if (message == "CHECK_CIRCUIT_CONNECTED")
+      } else if (message == "CHECK_CIRCUIT_CONNECTED") {
         webSocket.sendTXT("CHECK_CIRCUIT_CONNECTED_RESPONSE");
-      else if (strcmp(param1, "THRESHOLD_LEVEL") == 0 || strcmp(param1, "SYNC_THRESHOLD_LEVEL") == 0)
+      } else if (strcmp(param1, "THRESHOLD_LEVEL") == 0 || strcmp(param1, "SYNC_THRESHOLD_LEVEL") == 0)
         shakeThreshold = param2;
       else if (strcmp(param1, "SYNC_LED") == 0)
         digitalWrite(ledPin, param2);
       else if (strcmp(param1, "SYNC_BUZZER") == 0)
-        digitalWrite(buzzerPin, param2);
-      break;
-    default:
+        // digitalWrite(buzzerPin, param2);
+        if (param2 == 0)
+          noTone(buzzerPin);
+        else
+          tone(buzzerPin, sync_buzzerTone);
+      else if (message == "VEHICLE_COLLISION") {
+        for (int i = 0; i <= 5; i++) {
+          if (i % 2 == 0)
+            tone(buzzerPin, sync_buzzerTone);
+          else
+            noTone(buzzerPin);
+          delay(500);
+        }
+      }
       break;
   }
 }
@@ -122,4 +140,19 @@ void loop() {
   }
 
   lastAccel = currentAccel;
+}
+
+String getPublicIP() {
+  HTTPClient http;
+  http.begin("http://api.ipify.org");
+  int httpCode = http.GET();
+
+  if (httpCode > 0) {
+    String ip = http.getString();
+    http.end();
+    return ip;
+  } else {
+    http.end();
+    return "ERROR";
+  }
 }
