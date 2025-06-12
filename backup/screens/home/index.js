@@ -3,8 +3,7 @@ import {
     Text,
     Image,
     Typography,
-    StackAggregator,
-    Button
+    StackAggregator
 } from "react-native-ui-lib";
 import {
     useState,
@@ -18,7 +17,7 @@ import homeStyle from "../../theme/homeStyle";
 import ControlButton from "../../components/controlButton";
 import { Pressable } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import Color from "./../../utils/color";
+import Color from "../../utils/color";
 import { Picker } from '@react-native-picker/picker';
 
 export default function Home() {
@@ -32,7 +31,7 @@ export default function Home() {
 
     const [state, setState] = useState(0);
     const [ledState, setLedState] = useState(0);
-    const [thredsholdLevel, setThredsholdLevel] = useState("18");
+    const [thredsholdLevel, setThredsholdLevel] = useState("");
     const [location, setLocation] = useState("");
     const [isCircuitConnected, setIsCircuitConnected] = useState(false);
 
@@ -76,8 +75,9 @@ export default function Home() {
                     bingTimeout.current = Math.floor(Date.now() / 1000);
                     break;
                 case "CIRCUIT_IP":
-                    if (checkConnectInterval.current) 
+                    if (checkConnectInterval.current) {
                         clearInterval(checkConnectInterval.current);
+                    }
 
                     checkConnectInterval.current = setInterval(() => {
                         socket.send("CHECK_CIRCUIT_CONNECTED");
@@ -86,6 +86,10 @@ export default function Home() {
                 case "THRESHOLD_LEVEL":
                 case "SYNC_THRESHOLD_LEVEL":
                     setThredsholdLevel((args[1]));
+                    break;
+                case "CLIENT_DISCONNECTED":
+                case "CIRCUIT_DEVICE_CONNECTED":
+                    //
                     break;
                 default:
                     break;
@@ -120,31 +124,36 @@ export default function Home() {
     return (
         <View style={commonStyle.wrapper}>
             <View style={homeStyle.header}>
-                <View style={homeStyle.header.connectState}>
-                    <View style={{
-                        backgroundColor: (isCircuitConnected ? Color.danger.default : Color.danger.fade),
-                        justifyContent: "center",
-                        alignItems: "center",
-                        height: 100,
-                        width: 100,
-                        borderRadius: 100
-                    }}>
+                <Text
+                    black
+                    text40M
+                    style={homeStyle.header.title}
+                >Báo va chạm</Text>
+                <Pressable
+                    children={
                         <Icon
-                            name={(isCircuitConnected ? "cloud-queue" : "cloud-off")}
-                            size="50"
-                            color="white"
+                            name="connect-without-contact"
+                            size={30}
+                            color={(state ? Color.success.fade : "white")}
                         />
-                    </View>
-                    <Text marginT-16 center black text30>
+                    }
+                    onPress={handleStateBtn}
+                />
+                <View style={homeStyle.header.connectState}>
+                    <Icon
+                        name={(isCircuitConnected ? "cloud-queue" : "cloud-off")}
+                        size="200"
+                        color="white"
+                    />
+                    <Text center white>
                         {(isCircuitConnected ?
                             "Đã kết nối" :
                             "Mất kết nối"
                         )}
                     </Text>
-                    <Text>{isCircuitConnected ? location : "Không tìm thấy"}</Text>
                 </View>
             </View>
-            {/* <View style={homeStyle.thredsholdConfig}>
+            <View style={homeStyle.thredsholdConfig}>
                 <Text style={homeStyle.thredsholdConfig.title}>Ngưỡng va chạm</Text>
                 <Picker
                     selectedValue={thredsholdLevel}
@@ -152,8 +161,10 @@ export default function Home() {
                         sendWs(`THREDSHOLD_LEVEL|${itemValue}`);
                         setThredsholdLevel(itemValue);
                     }}
+                    // style={{}}
+                    // numberOfLines={30}
                     mode="dropdown"
-                    itemStyle={{ color: "black", width: "100" }}
+                    itemStyle={{ color: "white", width: "100" }}
                 >
                     {Array.from({ length: 50 }, (_, i) => (
                         <Picker.Item
@@ -163,59 +174,43 @@ export default function Home() {
                         />
                     ))}
                 </Picker>
-            </View> */}
+                {/* <Text style={homeStyle.thredsholdConfig.title}>Ngưỡng va chạm</Text> */}
+            </View>
             <View style={homeStyle.actions}>
-                <View columnGap-16 flexDirection="row" justifyContent="space-around" marginT-260>
-                    <ControlButton
-                        label="TÌM XE"
-                        width={210}
+                <View marginB-16 style={homeStyle.actions.location}>
+                    <Icon
+                        name="location-on"
                         color="white"
-                        backgroundColor={Color.danger.default}
-                        onPress={() => {
-                            sendWs("FIND_VEHICLE");
-                        }}
+                        size={16}
                     />
-                    <Pressable
-                        enableShadow
-                        marginR-16
-                        style={{
-                            color: "white",
-                            backgroundColor: (!ledState ? Color.danger.fade : Color.danger.default),
-                            height: 45,
-                            width: 45,
-                            borderRadius: 50,
-                            padding: 5
-                        }}
+                    <Text marginL-5 style={{
+                        color: "white"
+                    }}>{isCircuitConnected ? location : "Không tìm thấy"}</Text>
+                </View>
+                <View style={{
+                    // flexDirection: "row",
+                    // flexWrap: "wrap",
+                    columnGap: 16
+                }}>
+                    <ControlButton
+                        label={(`${!ledState ? `BẬT` : `TẮT`} LED`)}
+                        color={(!ledState ? Color.danger.default : Color.danger.fade)}
+                        backgroundColor={(!ledState ? Color.danger.fade : "white")}
                         onPress={() => {
                             setLedState(!ledState);
                             sendWs(`${!ledState ? `ON` : `OFF`}_LED`);
                         }}
-                    >
-                        <Icon
-                            name="motion-photos-on"
-                            size={35}
-                            color="white"
-                        />
-                    </Pressable>
-                    <Pressable
-                        marginR-16
-                        style={{
-                            color: "white",
-                            backgroundColor: (!state ? Color.danger.fade : Color.danger.default),
-                            height: 45,
-                            width: 45,
-                            borderRadius: 50,
-                            padding: 5
+                    />
+                    <ControlButton
+                        label="TÌM XE"
+                        color={Color.danger.default}
+                        backgroundColor={Color.danger.fade}
+                        onPress={() => {
+                            sendWs("FIND_VEHICLE");
                         }}
-                        onPress={handleStateBtn}
-                    >
-                        <Icon
-                            name="bedtime"
-                            size={35}
-                            color="white"
-                        />
-                    </Pressable>
+                    />
                 </View>
+                {/* <Text marginT-16>{wsMessages.join("\n")}</Text> */}
             </View>
         </View>
     );
