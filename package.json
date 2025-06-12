@@ -10,13 +10,16 @@
     "test": "jest"
   },
   "dependencies": {
+    "@react-native-picker/picker": "^2.11.0",
     "@react-native-vector-icons/evil-icons": "^12.0.0",
     "@react-native-vector-icons/fontawesome6": "^12.0.0",
+    "@vseslav/react-native-horizontal-picker": "^0.1.1",
     "react": "19.0.0",
     "react-native": "0.79.2",
     "react-native-circular-slider": "^1.0.1",
     "react-native-gesture-handler": "^2.25.0",
     "react-native-picker": "^4.3.7",
+    "react-native-picker-horizontal": "^0.1.2",
     "react-native-reanimated": "^3.18.0",
     "react-native-svg": "^15.12.0",
     "react-native-ui-lib": "^7.43.0",

@@ -6,8 +6,8 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_ADXL345_U.h>
 
-const char* ssid = "Nnq";
-const char* password = "25012005";
+const char* ssid = "GOBI";
+const char* password = "12346789";
 const int buzzerPin = 27;
 const int ledPin = 2;
 const int sync_buzzerTone = 1000;
@@ -80,7 +80,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
           noTone(buzzerPin);
         else
           tone(buzzerPin, sync_buzzerTone);
-      else if (message == "VEHICLE_COLLISION") {
+      else if (message == "VEHICLE_COLLISION" || message == "FIND_VEHICLE") {
         for (int i = 0; i <= 5; i++) {
           if (i % 2 == 0)
             tone(buzzerPin, sync_buzzerTone);

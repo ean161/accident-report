@@ -1569,6 +1569,11 @@
     prompts "^2.4.2"
     semver "^7.5.2"
 
+"@react-native-picker/picker@^2.11.0":
+  version "2.11.0"
+  resolved "https://registry.npmjs.org/@react-native-picker/picker/-/picker-2.11.0.tgz"
+  integrity sha512-QuZU6gbxmOID5zZgd/H90NgBnbJ3VV6qVzp6c7/dDrmWdX8S0X5YFYgDcQFjE3dRen9wB9FWnj2VVdPU64adSg==
+
 "@react-native-vector-icons/common@^12.0.0":
   version "12.0.0"
   resolved "https://registry.npmjs.org/@react-native-vector-icons/common/-/common-12.0.0.tgz"
@@ -2080,6 +2085,11 @@
   version "9.3.1"
   resolved "https://registry.npmjs.org/@vscode/sudo-prompt/-/sudo-prompt-9.3.1.tgz"
   integrity sha512-9ORTwwS74VaTn38tNbQhsA5U44zkJfcb0BdTSyyG6frP4e8KMtHuTXYmwefe5dpL8XB1aGSIVTaLjD3BbWb5iA==
+
+"@vseslav/react-native-horizontal-picker@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.npmjs.org/@vseslav/react-native-horizontal-picker/-/react-native-horizontal-picker-0.1.1.tgz"
+  integrity sha512-fwnl4NRFxZkTAdLGrxHprsGAun221Q5pMkUyXCPxOBqE1jxDUfCLhhdywT4+KKIOqEx3zfOE1ZZZw45drCcADA==
 
 "@xmldom/xmldom@^0.8.8":
   version "0.8.10"
@@ -6202,6 +6212,11 @@ react-native-make@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/react-native-make/-/react-native-make-1.0.1.tgz"
   integrity sha512-+Wo2JSp6NyeKleH9aZcdPsW7X8KiBOZkwx6L65UkPCDbk4FlcYd4yw+YIuK0SUVFkUaFHTU1n8LjIjFpT+YICA==
+
+react-native-picker-horizontal@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.npmjs.org/react-native-picker-horizontal/-/react-native-picker-horizontal-0.1.2.tgz"
+  integrity sha512-E4FWPo8kxgPXteYfYVvS2PNQvVwzNWOgtPP98ZJkIddw4XwU9xqguBUaRHUBiIe1W1xEucE7A0ZHNJ5BwsAKhQ==
 
 react-native-picker@^4.3.7:
   version "4.3.7"

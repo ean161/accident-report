@@ -18,6 +18,7 @@ import ControlButton from "../../components/controlButton";
 import { Pressable } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import Color from "./../../utils/color";
+import { Picker } from '@react-native-picker/picker';
 
 export default function Home() {
     const wsServer = "ws://160.187.246.117:8070";
@@ -30,7 +31,7 @@ export default function Home() {
 
     const [state, setState] = useState(0);
     const [ledState, setLedState] = useState(0);
-    const [buzzerState, setBuzzerState] = useState(0);
+    const [thredsholdLevel, setThredsholdLevel] = useState("");
     const [location, setLocation] = useState("");
     const [isCircuitConnected, setIsCircuitConnected] = useState(false);
 
@@ -65,9 +66,6 @@ export default function Home() {
                 case "SYNC_LED":
                     setLedState(parseInt(args[1]));
                     break;
-                case "SYNC_BUZZER":
-                    setBuzzerState(parseInt(args[1]));
-                    break;
                 case "SYNC_LOCATION":
                     if (args[1] != "ERROR")
                         setLocation(args[1]);
@@ -84,6 +82,10 @@ export default function Home() {
                     checkConnectInterval.current = setInterval(() => {
                         socket.send("CHECK_CIRCUIT_CONNECTED");
                     }, 1000);
+                    break;
+                case "THRESHOLD_LEVEL":
+                case "SYNC_THRESHOLD_LEVEL":
+                    setThredsholdLevel((args[1]));
                     break;
                 case "CLIENT_DISCONNECTED":
                 case "CIRCUIT_DEVICE_CONNECTED":
@@ -140,7 +142,7 @@ export default function Home() {
                 <View style={homeStyle.header.connectState}>
                     <Icon
                         name={(isCircuitConnected ? "cloud-queue" : "cloud-off")}
-                        size="150"
+                        size="200"
                         color="white"
                     />
                     <Text center white>
@@ -151,42 +153,64 @@ export default function Home() {
                     </Text>
                 </View>
             </View>
+            <View style={homeStyle.thredsholdConfig}>
+                <Text style={homeStyle.thredsholdConfig.title}>Ngưỡng va chạm</Text>
+                <Picker
+                    selectedValue={thredsholdLevel}
+                    onValueChange={(itemValue, itemIndex) =>{
+                        sendWs(`THREDSHOLD_LEVEL|${itemValue}`);
+                        setThredsholdLevel(itemValue);
+                    }}
+                    // style={{}}
+                    // numberOfLines={30}
+                    mode="dropdown"
+                    itemStyle={{ color: "white", width: "100" }}
+                >
+                    {Array.from({ length: 50 }, (_, i) => (
+                        <Picker.Item
+                        key={i}
+                        label={`${i}`}
+                        value={i.toString()}
+                        />
+                    ))}
+                </Picker>
+                {/* <Text style={homeStyle.thredsholdConfig.title}>Ngưỡng va chạm</Text> */}
+            </View>
             <View style={homeStyle.actions}>
                 <View marginB-16 style={homeStyle.actions.location}>
                     <Icon
                         name="location-on"
-                        color={Color.danger.default}
+                        color="white"
                         size={16}
                     />
                     <Text marginL-5 style={{
-                        color: Color.danger.default
+                        color: "white"
                     }}>{isCircuitConnected ? location : "Không tìm thấy"}</Text>
                 </View>
                 <View style={{
-                    flexDirection: "row",
-                    flexWrap: "wrap",
+                    // flexDirection: "row",
+                    // flexWrap: "wrap",
                     columnGap: 16
                 }}>
                     <ControlButton
                         label={(`${!ledState ? `BẬT` : `TẮT`} LED`)}
                         color={(!ledState ? Color.danger.default : Color.danger.fade)}
-                        backgroundColor={(!ledState ? Color.danger.fade : Color.danger.default)}
+                        backgroundColor={(!ledState ? Color.danger.fade : "white")}
                         onPress={() => {
                             setLedState(!ledState);
                             sendWs(`${!ledState ? `ON` : `OFF`}_LED`);
                         }}
                     />
                     <ControlButton
-                        label={(`${!buzzerState ? `BẬT` : `TẮT`} CHUÔNG`)}
-                        color={(!buzzerState ? Color.danger.default : Color.danger.fade)}
-                        backgroundColor={(!buzzerState ? Color.danger.fade : Color.danger.default)}
+                        label="TÌM XE"
+                        color={Color.danger.default}
+                        backgroundColor={Color.danger.fade}
                         onPress={() => {
-                            setBuzzerState(!buzzerState);
-                            sendWs(`${!buzzerState ? `ON` : `OFF`}_SOUND`);
+                            sendWs("FIND_VEHICLE");
                         }}
                     />
                 </View>
-                <Text marginT-16>{wsMessages.join("\n")}</Text>
+                {/* <Text marginT-16>{wsMessages.join("\n")}</Text> */}
             </View>
         </View>
     );
