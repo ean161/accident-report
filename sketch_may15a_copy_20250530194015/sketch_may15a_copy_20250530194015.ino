@@ -64,22 +64,12 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
         digitalWrite(ledPin, HIGH);
       else if (message == "OFF_LED")
         digitalWrite(ledPin, LOW);
-      else if (message == "ON_SOUND")
-        tone(buzzerPin, sync_buzzerTone);
-      else if (message == "OFF_SOUND") {
-        noTone(buzzerPin);
       } else if (message == "CHECK_CIRCUIT_CONNECTED") {
         webSocket.sendTXT("CHECK_CIRCUIT_CONNECTED_RESPONSE");
       } else if (strcmp(param1, "THRESHOLD_LEVEL") == 0 || strcmp(param1, "SYNC_THRESHOLD_LEVEL") == 0)
         shakeThreshold = param2;
       else if (strcmp(param1, "SYNC_LED") == 0)
-        digitalWrite(ledPin, param2);
-      else if (strcmp(param1, "SYNC_BUZZER") == 0)
-        // digitalWrite(buzzerPin, param2);
-        if (param2 == 0)
-          noTone(buzzerPin);
-        else
-          tone(buzzerPin, sync_buzzerTone);
+        digitalWrite(ledPin, param2)
       else if (message == "VEHICLE_COLLISION" || message == "FIND_VEHICLE") {
         for (int i = 0; i <= 5; i++) {
           if (i % 2 == 0)

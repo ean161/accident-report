@@ -1,25 +1,23 @@
-import {
-    View,
-    Text,
-    Image,
-    Typography,
-    StackAggregator,
-    Button
-} from "react-native-ui-lib";
+import { Pressable } from "react-native";
 import {
     useState,
     useEffect,
-    useRef,
-    Colors
+    useRef
 } from "react";
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import commonStyle from "../../theme/commonStyle";
-import homeStyle from "../../theme/homeStyle";
-import ControlButton from "../../components/controlButton";
-import { Pressable } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
-import Color from "./../../utils/color";
+
 import { Picker } from '@react-native-picker/picker';
+import {
+    View,
+    Text
+} from "react-native-ui-lib";
+import Icon from 'react-native-vector-icons/MaterialIcons';
+
+import ControlButton from "../../components/controlButton";
+
+import homeStyle from "../../theme/homeStyle";
+import commonStyle from "../../theme/commonStyle";
+
+import Color from "./../../utils/color";
 
 export default function Home() {
     const wsServer = "ws://160.187.246.117:8070";
@@ -40,11 +38,25 @@ export default function Home() {
         if (wsState)
             ws.send(data);
     }
-    
+
     const handleStateBtn = () => {
         let newState = state == 1 ? 0 : 1;
         setState(newState);
         sendWs(`STATE|${newState}`);
+    }
+
+    const handleLedBtn = () => {
+        setLedState(!ledState);
+        sendWs(`${!ledState ? `ON` : `OFF`}_LED`);
+    }
+
+    const handleFindBtn = () => {
+        sendWs("FIND_VEHICLE");
+    }
+
+    const handleThresholdConfig = (itemValue, itemIndex) => {
+        sendWs(`THREDSHOLD_LEVEL|${itemValue}`);
+        setThredsholdLevel(itemValue);
     }
 
     useEffect(() => {
@@ -76,7 +88,7 @@ export default function Home() {
                     bingTimeout.current = Math.floor(Date.now() / 1000);
                     break;
                 case "CIRCUIT_IP":
-                    if (checkConnectInterval.current) 
+                    if (checkConnectInterval.current)
                         clearInterval(checkConnectInterval.current);
 
                     checkConnectInterval.current = setInterval(() => {
@@ -121,16 +133,16 @@ export default function Home() {
         <View style={commonStyle.wrapper}>
             <View style={homeStyle.header}>
                 <View style={homeStyle.header.connectState}>
-                    <View style={{
-                        backgroundColor: (isCircuitConnected ? Color.danger.default : Color.danger.fade),
-                        justifyContent: "center",
-                        alignItems: "center",
-                        height: 100,
-                        width: 100,
-                        borderRadius: 100
-                    }}>
+                    <View style={[
+                            homeStyle.header.connectState.icon,
+                            { backgroundColor: (isCircuitConnected ? Color.danger.default : Color.danger.fade) }
+                        ]}
+                    >
                         <Icon
-                            name={(isCircuitConnected ? "cloud-queue" : "cloud-off")}
+                            name={(isCircuitConnected ?
+                                "cloud-queue" :
+                                "cloud-off"
+                            )}
                             size="50"
                             color="white"
                         />
@@ -141,55 +153,47 @@ export default function Home() {
                             "Mất kết nối"
                         )}
                     </Text>
-                    <Text>{isCircuitConnected ? location : "Không tìm thấy"}</Text>
+                    <Text>
+                        {isCircuitConnected ?
+                            location :
+                            "Không tìm thấy"}
+                    </Text>
                 </View>
             </View>
-            {/* <View style={homeStyle.thredsholdConfig}>
-                <Text style={homeStyle.thredsholdConfig.title}>Ngưỡng va chạm</Text>
+            <View style={homeStyle.thredsholdConfig}>
                 <Picker
                     selectedValue={thredsholdLevel}
-                    onValueChange={(itemValue, itemIndex) =>{
-                        sendWs(`THREDSHOLD_LEVEL|${itemValue}`);
-                        setThredsholdLevel(itemValue);
+                    onValueChange={(itemValue, itemIndex) => {
+                        handleThresholdConfig(itemValue, itemIndex);
                     }}
                     mode="dropdown"
                     itemStyle={{ color: "black", width: "100" }}
                 >
                     {Array.from({ length: 50 }, (_, i) => (
                         <Picker.Item
-                        key={i}
-                        label={`${i}`}
-                        value={i.toString()}
+                            key={i}
+                            label={`${i}`}
+                            value={i.toString()}
                         />
                     ))}
                 </Picker>
-            </View> */}
+            </View>
             <View style={homeStyle.actions}>
-                <View columnGap-16 flexDirection="row" justifyContent="space-around" marginT-260>
+                <View columnGap-16 flexDirection="row" justifyContent="space-around" marginT-200>
                     <ControlButton
                         label="TÌM XE"
                         width={210}
                         color="white"
                         backgroundColor={Color.danger.default}
-                        onPress={() => {
-                            sendWs("FIND_VEHICLE");
-                        }}
+                        onPress={handleFindBtn}
                     />
                     <Pressable
-                        enableShadow
                         marginR-16
-                        style={{
-                            color: "white",
-                            backgroundColor: (!ledState ? Color.danger.fade : Color.danger.default),
-                            height: 45,
-                            width: 45,
-                            borderRadius: 50,
-                            padding: 5
-                        }}
-                        onPress={() => {
-                            setLedState(!ledState);
-                            sendWs(`${!ledState ? `ON` : `OFF`}_LED`);
-                        }}
+                        style={[
+                            homeStyle.actions.button,
+                            { backgroundColor: (!ledState ? Color.danger.fade : Color.danger.default) }
+                        ]}
+                        onPress={handleLedBtn}
                     >
                         <Icon
                             name="motion-photos-on"
@@ -199,14 +203,10 @@ export default function Home() {
                     </Pressable>
                     <Pressable
                         marginR-16
-                        style={{
-                            color: "white",
-                            backgroundColor: (!state ? Color.danger.fade : Color.danger.default),
-                            height: 45,
-                            width: 45,
-                            borderRadius: 50,
-                            padding: 5
-                        }}
+                        style={[
+                            homeStyle.actions.button,
+                            { backgroundColor: (!state ? Color.danger.fade : Color.danger.default) }
+                        ]}
                         onPress={handleStateBtn}
                     >
                         <Icon
